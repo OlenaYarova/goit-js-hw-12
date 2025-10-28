@@ -99,20 +99,34 @@ async function handlerSubmit(event) {
 }
 
 loadMore.addEventListener("click", async () => {
+    hideLoadMoreButton();
+    showLoader();
+    page += 1;
+
+
+
     try {
-        showLoader();
+        // showLoader();
 
-        const nextPage = page + 1;
-        const data = await getImagesByQuery(currentQuery, nextPage);
+        // const nextPage = page + 1;
+        const data = await getImagesByQuery(currentQuery, page);
 
-        if (data.hits.length === 0) {
+        if (!data.hits.length) {
             handleEndOfResults();
             return;
         }
         createGallery(data.hits);
-        page = nextPage;
+        // page = nextPage;
 
         totalHits = data.totalHits || totalHits;
+        const pagesCount = Math.ceil(totalHits / 15);
+        if (page < pagesCount) {
+            showLoadMoreButton();
+        } else {
+            handleEndOfResults();
+}
+
+
         const firstCard = gallery.querySelector(".gallery-item");
         if (firstCard) {
             const { height: cardHeight } = firstCard.getBoundingClientRect();
@@ -121,17 +135,19 @@ loadMore.addEventListener("click", async () => {
                 behavior: "smooth"
             });
         }
-        const pagesCount = Math.ceil(totalHits / 15);
-        if (page >= pagesCount) {
-            handleEndOfResults();
-        }
+        // const pagesCount = Math.ceil(totalHits / 15);
+        // if (page >= pagesCount) {
+        //     handleEndOfResults();
+        // }
     } catch (error) {
         iziToast.error({
             message: 'Please try again!',
             timeout: 3000,
             position: "topRight",
         })
-        console.error(error);
+        page -= 1;
+        showLoadMoreButton()
+        // console.error(error);
     } finally {
         hideLoader();
     };
